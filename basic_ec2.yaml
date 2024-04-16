@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CFT for Creating EC2 instance
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0eba6c58b7918d3a1"
+      InstanceType: "t2.micro"
+      KeyName: "aws_key1"
+      NetworkInterfaces: 
+      - AssociatePublicIpAddress: "true"
+        DeviceIndex: "0"
+        GroupSet: 
+          - Ref: "launch-wizard-1"
+        SubnetId: 
+          Ref: "subnet-0101d010934ad9d19"
+      BlockDeviceMappings: 
+      - DeviceName: "/dev/sda1"
+        Ebs: 
+          VolumeType: "gp2"
+          Iops: "100"
+          DeleteOnTermination: "true"
+          VolumeSize: "8"
