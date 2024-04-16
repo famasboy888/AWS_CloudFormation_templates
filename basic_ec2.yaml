@@ -10,14 +10,21 @@ Resources:
       NetworkInterfaces: 
       - AssociatePublicIpAddress: "true"
         DeviceIndex: "0"
-        GroupSet: 
-          - Ref: "launch-wizard-1"
-        SubnetId: 
-          Ref: "subnet-0101d010934ad9d19"
+        GroupSet:
+         - sg-0723f7778b769f96b
+        SubnetId: subnet-0101d010934ad9d19
       BlockDeviceMappings: 
       - DeviceName: "/dev/sda1"
         Ebs: 
-          VolumeType: "gp2"
+          VolumeType: "gp3"
           Iops: "100"
           DeleteOnTermination: "true"
           VolumeSize: "8"
+      UserData: 
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          sudo apt-get update -y
+          sudo apt install apache2 -y
+          sudo ufw allow 'Apache'
+          sudo systemctl enable apache2
+          sudo systemctl start apache2
