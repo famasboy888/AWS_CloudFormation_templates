@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CFT for Creating EC2 instance
+Resources:
+  publicVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+       - Key: Name
+         Value: public-vpc
+  publicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: publicVPC
+      CidrBlock: 10.0.0.0/24
+  publicInternetGateway:
+    Type: AWS::EC2::InternetGateway
+  publicVPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: publicVPC
+      InternetGatewayId:
+        Ref: publicInternetGateway
+  publicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: publicVPC
+  publicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: publicVPCGatewayAttachment
+    Properties:
+       RouteTableId:
+         Ref: publicRouteTable
+       DestinationCidrBlock: 0.0.0.0/0
+       GatewayId:
+         Ref: publicInternetGateway
+  publicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: publicSubnet
+      RouteTableId:
+        Ref: publicRouteTable
+  publicSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to client host
+      VpcId:  
+        Ref: publicVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0eba6c58b7918d3a1"
+      InstanceType: "t2.micro"
+      KeyName: "aws_key1"
+      NetworkInterfaces: 
+      - AssociatePublicIpAddress: "true"
+        DeviceIndex: "0"
+        GroupSet: 
+          - !Ref publicSecurityGroup
+        SubnetId: !Ref publicSubnet
+        DeleteOnTermination: "true"
+      UserData: 
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          sudo apt-get update -y
+          sudo apt install apache2 -y
+          sudo ufw allow 'Apache'
+          sudo systemctl enable apache2
+          sudo systemctl start apache2

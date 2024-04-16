@@ -11,8 +11,8 @@ Resources:
       - AssociatePublicIpAddress: "true"
         DeviceIndex: "0"
         GroupSet:
-         - sg-0723f7778b769f96b
-        SubnetId: subnet-0101d010934ad9d19
+         - sg-0fd7bbd97695466c6
+        SubnetId: subnet-07b54be49413e3641
       BlockDeviceMappings: 
       - DeviceName: "/dev/sda1"
         Ebs: 
